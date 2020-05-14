@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ofMain.h"
-
 //LogarithmicPriceScaleViewer
 
 const string dataTypeName[] = {
@@ -59,7 +58,7 @@ typedef struct{
     
     string getValAsString(int n){ return ofToString(data_val[n]); }
     
-    double getVal(DATA_TYPE t){ return data_val[t]; }
+    double getVal(DATA_TYPE t) const { return data_val[t]; }
     
     int getYear() { return time.year; }
     int getMonth() { return time.month; }
@@ -101,6 +100,7 @@ private:
     
 protected:
     void setNewData();
+    void setMinMax(const vector<financeData> &data);
     void setPin(float x, float y);
     void drawDataInfo();
     void drawDataLine();
@@ -116,7 +116,9 @@ public:
     maxHeight(0.0),
     scale(0.0),
     minLineY(0.0),
-    gap(100.0)
+    gap(100.0),
+    minData{0,0},
+    maxData{0,0}
     {}
     
     void setup();

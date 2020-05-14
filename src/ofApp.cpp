@@ -1,8 +1,8 @@
 #include "ofApp.h"
-
 //--------------------------------------------------------------
 void ofApp::setup(){
-    displayFont.load("font/Hack-Regular.ttf", 27);
+    ofSetDataPathRoot("../Resources/");
+    displayFont.load(ofFilePath::getCurrentWorkingDirectory()+"/Hack-Regular.ttf", 27);
     lineHeight = displayFont.stringHeight("Q");
     ofSetWindowShape(ofGetScreenWidth() * 0.8, ofGetScreenHeight() * 0.6);
     maxHeight = ofGetHeight() * 0.8;
@@ -48,15 +48,16 @@ void ofApp::keyPressed(int key){
             if(endDataID != -1){ size = endDataID + 1; }
             for (int i = startDataID; i < size; i++) {
                 auto f = currentFinanceDatas[i];
+                newDatas.push_back(f);
                 if(i == startDataID){
                     minData[logarithmic_line] = f.getVal(log_val);
                     minData[linear_line] = f.getVal(close_val);
+                }else if(i == size - 1){
+                    maxData[logarithmic_line] = f.getVal(log_val);
+                    maxData[linear_line] = f.getVal(close_val);
                 }
-                else if(f.getVal(log_val) < minData[logarithmic_line]){ minData[logarithmic_line] = f.getVal(log_val);
-                    minData[linear_line] = f.getVal(close_val);
-                }
-                newDatas.push_back(f);
             }
+            setMinMax(newDatas);
             currentFinanceDatas = newDatas;
             setNewData();
             startDataID = 0;
@@ -65,8 +66,7 @@ void ofApp::keyPressed(int key){
             break;
         case ' ':{
             endDataID = -1;
-            minData[logarithmic_line] = 0.0;
-            minData[linear_line] = 0.0;
+            setMinMax(financeDatas);
             currentFinanceDatas = financeDatas;
             setNewData();
             startDataID = 0;
@@ -138,14 +138,9 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
         vector<string> parseData = ofSplitString(l, ",");
         financeData f;
         f.init(parseData);
-        if(f.getVal(log_val) > maxData[logarithmic_line]){ maxData[logarithmic_line] = f.getVal(log_val); }
-        if(f.getVal(log_val) < minData[logarithmic_line]){ minData[logarithmic_line] = f.getVal(log_val); }
-        if(f.getVal(close_val) > maxData[linear_line]){ maxData[linear_line] = f.getVal(close_val); }
-        if(f.getVal(close_val) < minData[linear_line]){ minData[linear_line] = f.getVal(close_val); }
         financeDatas.push_back(f);
     }
-    maxData[logarithmic_line] = ceil(maxData[logarithmic_line]);
-    maxData[linear_line] = ceil(maxData[linear_line]);
+    setMinMax(financeDatas);
     currentFinanceDatas = financeDatas;
     setNewData();
 }
@@ -167,6 +162,18 @@ void ofApp::setNewData(){
         double pos = x * scale;
         dataLine[linear_line].addVertex(pos, height);
     }
+}
+
+//--------------------------------------------------------------
+void ofApp::setMinMax(const vector<financeData> &data){
+    for (auto & f : data) {
+        if(f.getVal(log_val) > maxData[logarithmic_line]){ maxData[logarithmic_line] = f.getVal(log_val); }
+        if(f.getVal(log_val) < minData[logarithmic_line]){ minData[logarithmic_line] = f.getVal(log_val); }
+        if(f.getVal(close_val) > maxData[linear_line]){ maxData[linear_line] = f.getVal(close_val); }
+        if(f.getVal(close_val) < minData[linear_line]){ minData[linear_line] = f.getVal(close_val); }
+    }
+    maxData[logarithmic_line] = ceil(maxData[logarithmic_line]);
+    maxData[linear_line] = ceil(maxData[linear_line]);
 }
 
 //--------------------------------------------------------------
